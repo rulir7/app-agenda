@@ -2,6 +2,37 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.7.
 
+components/ - Contém todos os componentes da aplicação:
+login/
+nav/
+compromissos/
+contatos/
+locais/
+
+services/ - Contém todos os serviços:
+auth.service.ts
+compromisso.service.ts
+contato.service.ts
+local.service.ts
+
+models/ - Contém todas as interfaces:
+usuario.interface.ts
+compromisso.interface.ts
+contato.interface.ts
+local.interface.ts
+
+guards/ - Contém os guards de proteção de rotas:
+auth.guard.ts
+admin.guard.ts
+
+interceptors/ - Contém o interceptor HTTP:
+auth.interceptor.ts
+
+Arquivos principais:
+app.component.ts
+app.config.ts
+app.routes.ts
+
 ## Development server
 
 To start a local development server, run:

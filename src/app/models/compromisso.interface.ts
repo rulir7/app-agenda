@@ -1,4 +1,3 @@
-// compromisso.model.ts - Modelo de dados para compromissos
 export interface Compromisso {
   id?: number;
   titulo: string;
