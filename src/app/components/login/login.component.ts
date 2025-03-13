@@ -290,7 +290,13 @@ export class LoginComponent {
       const { email, senha } = this.loginForm.value;
       this.authService.login(email, senha).subscribe({
         next: () => {
-          this.router.navigate(['/compromissos']);
+          const token = localStorage.getItem('token');
+          console.log('Token após login:', token); // Verifique se o token está sendo armazenado corretamente.
+          if (token) {
+            this.router.navigate(['/compromissos']);
+          } else {
+            this.error = 'Erro ao autenticar o token. Tente novamente.';
+          }
         },
         error: (err) => {
           console.error('Erro ao fazer login:', err);

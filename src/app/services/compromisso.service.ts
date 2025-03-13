@@ -14,7 +14,7 @@ export class CompromissoService {
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   getCompromissos(): Observable<Compromisso[]> {
-    const usuario = this.authService.getCurrentUser();
+    const usuario = this.authService.getUsuarioLogado();
     if (usuario?.nivelAcesso === 'admin') {
       return this.http.get<Compromisso[]>(this.apiUrl);
     } else {
@@ -29,7 +29,7 @@ export class CompromissoService {
   }
 
   criarCompromisso(compromisso: Compromisso): Observable<Compromisso> {
-    const usuario = this.authService.getCurrentUser();
+    const usuario = this.authService.getUsuarioLogado();
     compromisso.usuarioId = usuario?.id || 0;
     return this.http.post<Compromisso>(this.apiUrl, compromisso);
   }
@@ -52,7 +52,7 @@ export class CompromissoService {
   }
 
   private async podeEditarCompromisso(compromissoId: number): Promise<boolean> {
-    const usuario = this.authService.getCurrentUser();
+    const usuario = this.authService.getUsuarioLogado();
     if (usuario?.nivelAcesso === 'admin') return true;
 
     const compromisso = await this.http

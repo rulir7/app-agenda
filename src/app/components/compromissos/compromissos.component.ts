@@ -218,7 +218,8 @@ export class CompromissosComponent implements OnInit {
 
   editarCompromisso(compromisso: Compromisso) {
     this.modoEdicao = true;
-    this.compromissoEmEdicao = compromisso.id;
+    this.compromissoEmEdicao =
+      compromisso.id !== undefined ? compromisso.id : null;
     this.compromissoForm.patchValue(compromisso);
   }
 

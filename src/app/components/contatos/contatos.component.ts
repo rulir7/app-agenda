@@ -171,7 +171,7 @@ export class ContatosComponent implements OnInit {
 
   editarContato(contato: Contato) {
     this.modoEdicao = true;
-    this.contatoEmEdicao = contato.id;
+    this.contatoEmEdicao = contato.id !== undefined ? contato.id : null;
     this.contatoForm.patchValue(contato);
   }
 
