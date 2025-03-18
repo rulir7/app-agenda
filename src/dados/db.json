@@ -1,5 +1,106 @@
 {
-  "compromissos": [],
-  "contatos": [],
-  "locais": []
+  "compromissos": [
+    {
+      "titulo": "Compromisso Admin",
+      "descricao": "Teste admin compromisso",
+      "data": "2025-03-31",
+      "hora": "22:00",
+      "contatoId": "1",
+      "localId": "1",
+      "usuarioId": 67,
+      "id": 1
+    },
+    {
+      "titulo": "Teste",
+      "descricao": "testar para apagar",
+      "data": "2025-03-25",
+      "hora": "19:00",
+      "contatoId": "3",
+      "localId": "1",
+      "id": 5,
+      "userId": "67"
+    },
+    {
+      "titulo": "Teste3",
+      "descricao": "testar",
+      "data": "2025-03-25",
+      "hora": "16:00",
+      "contatoId": "4",
+      "localId": "2",
+      "id": 6,
+      "userId": "67"
+    },
+    {
+      "titulo": "Admin visitar ",
+      "descricao": "teste privilegio ",
+      "data": "2025-03-31",
+      "hora": "19:00",
+      "contatoId": "2",
+      "localId": "3",
+      "userId": "67",
+      "id": 7
+    }
+  ],
+  "contatos": [
+    {
+      "nome": "Rodrigo",
+      "telefone": "479999999",
+      "email": "rulir@hotmail.com",
+      "id": 1
+    },
+    {
+      "nome": "Arthur",
+      "telefone": "47988035565",
+      "email": "arthur@email.com",
+      "id": 2
+    },
+    {
+      "nome": "Victor",
+      "telefone": "47988022563",
+      "email": "viko@gmail.com",
+      "id": 3
+    },
+    {
+      "nome": "Camila",
+      "telefone": "4799147556",
+      "email": "camila@email.com",
+      "id": 4
+    },
+    {
+      "nome": "Admin",
+      "telefone": "4799899999",
+      "email": "admin@email.com",
+      "id": 5
+    },
+    {
+      "nome": "Apagar",
+      "email": "del@email.com",
+      "telefone": "4795564452",
+      "id": 7
+    },
+    {
+      "nome": "Teste",
+      "email": "teste2@teste.com",
+      "telefone": "479556165241",
+      "userId": "67",
+      "id": 8
+    }
+  ],
+  "locais": [
+    {
+      "nome": "Local teste",
+      "endereco": "Rua do teste, 99",
+      "id": 1
+    },
+    {
+      "nome": "Local2",
+      "endereco": "Local2 da Rua",
+      "id": 2
+    },
+    {
+      "nome": "Local3",
+      "endereco": "Teste do Local3 ",
+      "id": 3
+    }
+  ]
 }

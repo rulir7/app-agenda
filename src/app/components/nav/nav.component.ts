@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
         <a class="navbar-brand" routerLink="/">Agenda</a>
         <button
@@ -16,6 +16,9 @@ import { AuthService } from '../../services/auth.service';
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -39,7 +42,7 @@ import { AuthService } from '../../services/auth.service';
                 Contatos
               </a>
             </li>
-            <li class="nav-item" *ngIf="authService.isLoggedIn()">
+            <li class="nav-item" *ngIf="authService.isAdmin()">
               <a
                 class="nav-link"
                 routerLink="/locais"
@@ -54,13 +57,20 @@ import { AuthService } from '../../services/auth.service';
               <a class="nav-link" routerLink="/login">Login</a>
             </li>
             <li class="nav-item" *ngIf="authService.isLoggedIn()">
-              <a class="nav-link" href="#" (click)="logout($event)">Sair</a>
+              <a class="nav-link" href="#" (click)="logout($event)">Logout</a>
             </li>
           </ul>
         </div>
       </div>
     </nav>
   `,
+  styles: [
+    `
+      .navbar {
+        margin-bottom: 1rem;
+      }
+    `,
+  ],
 })
 export class NavComponent {
   constructor(public authService: AuthService) {}

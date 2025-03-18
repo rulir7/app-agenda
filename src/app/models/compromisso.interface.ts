@@ -7,4 +7,5 @@ export interface Compromisso {
   contatoId: number;
   localId: number;
   usuarioId: number;
+  userId: string;
 }

@@ -16,177 +16,205 @@ import { Contato } from '../../models/contato.interface';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="container mt-4">
-      <h2>Contatos</h2>
+      <h2>Gerenciar Contatos</h2>
 
-      <!-- Formulário de Novo Contato -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>{{ modoEdicao ? 'Editar Contato' : 'Novo Contato' }}</h4>
-        </div>
-        <div class="card-body">
-          <form [formGroup]="contatoForm" (ngSubmit)="onSubmit()">
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <label class="form-label">Nome</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  formControlName="nome"
-                />
-              </div>
-              <div class="col-md-4 mb-3">
-                <label class="form-label">Telefone</label>
-                <input
-                  type="tel"
-                  class="form-control"
-                  formControlName="telefone"
-                />
-              </div>
-              <div class="col-md-4 mb-3">
-                <label class="form-label">Email</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  formControlName="email"
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              [disabled]="!contatoForm.valid"
-            >
-              {{ modoEdicao ? 'Atualizar' : 'Salvar' }}
-            </button>
-            <button
-              *ngIf="modoEdicao"
-              type="button"
-              class="btn btn-secondary ms-2"
-              (click)="resetForm()"
-            >
-              Cancelar
-            </button>
-          </form>
-        </div>
+      <!-- Mensagem de erro/sucesso -->
+      <div
+        *ngIf="mensagem"
+        class="alert"
+        [ngClass]="{
+          'alert-success': !mensagem.includes('erro'),
+          'alert-danger': mensagem.includes('erro')
+        }"
+      >
+        {{ mensagem }}
       </div>
 
-      <!-- Lista de Contatos -->
-      <div class="card">
-        <div class="card-header">
-          <h4>Meus Contatos</h4>
+      <form [formGroup]="contatoForm" (ngSubmit)="onSubmit()" class="mb-4">
+        <div class="mb-3">
+          <label for="nome" class="form-label">Nome</label>
+          <input
+            type="text"
+            class="form-control"
+            id="nome"
+            formControlName="nome"
+          />
         </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Telefone</th>
-                  <th>Email</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let contato of contatos">
-                  <td>{{ contato.nome }}</td>
-                  <td>{{ contato.telefone }}</td>
-                  <td>{{ contato.email }}</td>
-                  <td>
-                    <button
-                      class="btn btn-sm btn-warning me-2"
-                      (click)="editarContato(contato)"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      class="btn btn-sm btn-danger"
-                      (click)="deletarContato(contato.id!)"
-                    >
-                      Excluir
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            formControlName="email"
+          />
         </div>
-      </div>
+        <div class="mb-3">
+          <label for="telefone" class="form-label">Telefone</label>
+          <input
+            type="tel"
+            class="form-control"
+            id="telefone"
+            formControlName="telefone"
+          />
+        </div>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!contatoForm.valid"
+        >
+          {{ editando ? 'Atualizar' : 'Adicionar' }}
+        </button>
+        <button
+          *ngIf="editando"
+          type="button"
+          class="btn btn-secondary ms-2"
+          (click)="cancelarEdicao()"
+        >
+          Cancelar
+        </button>
+      </form>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Telefone</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let contato of contatos">
+            <td>{{ contato.nome }}</td>
+            <td>{{ contato.email }}</td>
+            <td>{{ contato.telefone }}</td>
+            <td>
+              <button
+                class="btn btn-sm btn-primary me-2"
+                (click)="editarContato(contato)"
+                *ngIf="podeEditarOuExcluir(contato)"
+              >
+                Editar
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                (click)="excluirContato(contato.id)"
+                *ngIf="podeEditarOuExcluir(contato)"
+              >
+                Excluir
+              </button>
+              <span *ngIf="!podeEditarOuExcluir(contato)" class="text-muted">
+                Sem permissão para editar/excluir
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   `,
+  styles: [],
 })
 export class ContatosComponent implements OnInit {
-  contatoForm: FormGroup;
   contatos: Contato[] = [];
-  modoEdicao = false;
-  contatoEmEdicao: number | null = null;
+  contatoForm: FormGroup;
+  editando = false;
+  contatoEditandoId: number | null = null;
+  mensagem: string = '';
 
   constructor(
-    private fb: FormBuilder,
     private contatoService: ContatoService,
-    private authService: AuthService
+    private authService: AuthService,
+    private fb: FormBuilder
   ) {
     this.contatoForm = this.fb.group({
       nome: ['', Validators.required],
-      telefone: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      telefone: ['', Validators.required],
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.carregarContatos();
   }
 
-  carregarContatos() {
-    this.contatoService.getContatos().subscribe((contatos) => {
-      this.contatos = contatos;
+  carregarContatos(): void {
+    this.contatoService.getContatos().subscribe({
+      next: (contatos) => {
+        this.contatos = contatos;
+      },
+      error: (erro) => {
+        this.mensagem = 'Erro ao carregar contatos: ' + erro.message;
+      },
     });
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.contatoForm.valid) {
-      const contato = this.contatoForm.value;
-
-      if (this.modoEdicao && this.contatoEmEdicao) {
+      if (this.editando && this.contatoEditandoId) {
         this.contatoService
-          .atualizarContato(this.contatoEmEdicao, contato)
+          .atualizarContato(this.contatoEditandoId, this.contatoForm.value)
           .subscribe({
             next: () => {
-              this.resetForm();
+              this.mensagem = 'Contato atualizado com sucesso!';
               this.carregarContatos();
+              this.cancelarEdicao();
             },
-            error: (error) =>
-              console.error('Erro ao atualizar contato:', error),
+            error: (erro) => {
+              this.mensagem = 'Erro ao atualizar contato: ' + erro.message;
+            },
           });
       } else {
-        this.contatoService.criarContato(contato).subscribe({
+        this.contatoService.criarContato(this.contatoForm.value).subscribe({
           next: () => {
-            this.resetForm();
+            this.mensagem = 'Contato criado com sucesso!';
             this.carregarContatos();
+            this.contatoForm.reset();
           },
-          error: (error) => console.error('Erro ao criar contato:', error),
+          error: (erro) => {
+            this.mensagem = 'Erro ao criar contato: ' + erro.message;
+          },
         });
       }
     }
   }
 
-  editarContato(contato: Contato) {
-    this.modoEdicao = true;
-    this.contatoEmEdicao = contato.id !== undefined ? contato.id : null;
-    this.contatoForm.patchValue(contato);
+  editarContato(contato: Contato): void {
+    this.editando = true;
+    this.contatoEditandoId = contato.id;
+    this.contatoForm.patchValue({
+      nome: contato.nome,
+      email: contato.email,
+      telefone: contato.telefone,
+    });
   }
 
-  deletarContato(id: number) {
+  excluirContato(id: number): void {
     if (confirm('Tem certeza que deseja excluir este contato?')) {
-      this.contatoService.deletarContato(id).subscribe({
-        next: () => this.carregarContatos(),
-        error: (error) => console.error('Erro ao deletar contato:', error),
+      this.contatoService.excluirContato(id).subscribe({
+        next: () => {
+          this.mensagem = 'Contato excluído com sucesso!';
+          this.carregarContatos();
+        },
+        error: (erro) => {
+          this.mensagem = 'Erro ao excluir contato: ' + erro.message;
+        },
       });
     }
   }
 
-  resetForm() {
+  cancelarEdicao(): void {
+    this.editando = false;
+    this.contatoEditandoId = null;
     this.contatoForm.reset();
-    this.modoEdicao = false;
-    this.contatoEmEdicao = null;
+  }
+
+  podeEditarOuExcluir(contato: Contato): boolean {
+    const usuario = this.authService.getUsuarioLogado();
+    if (!usuario) return false;
+
+    if (usuario.nivelAcesso === 'admin') return true;
+
+    return contato.userId ? contato.userId === usuario.id.toString() : false;
   }
 }

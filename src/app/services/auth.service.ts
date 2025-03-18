@@ -9,6 +9,7 @@ import {
   throwError,
 } from 'rxjs';
 import { Usuario } from '../models/usuario.interface';
+import { Router } from '@angular/router';
 
 interface LoginResponse {
   token: string;
@@ -25,16 +26,29 @@ interface LoginResponse {
 })
 export class AuthService {
   private apiUrl = 'https://api-users-gdsb.onrender.com';
-  private usuarioLogadoSubject = new BehaviorSubject<Usuario | null>(null);
-  usuarioLogado$ = this.usuarioLogadoSubject.asObservable();
+  private usuarioLogado = new BehaviorSubject<Usuario | null>(null);
+  usuarioLogado$ = this.usuarioLogado.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     const usuarioSalvo = localStorage.getItem('usuarioLogado');
     const token = localStorage.getItem('token');
     if (usuarioSalvo && token) {
-      this.usuarioLogadoSubject.next(JSON.parse(usuarioSalvo));
+      this.usuarioLogado.next(JSON.parse(usuarioSalvo));
     }
   }
+
+  //versao professor
+  /*
+constructor() {
+IsAuthenticated(): boolean {
+return !!localStorage.getItem('token');
+}
+}
+
+
+
+
+*/
 
   private addAuthHeaders() {
     const token = this.getToken();
@@ -42,6 +56,17 @@ export class AuthService {
       return new HttpHeaders().set('Authorization', `Bearer ${token}`);
     }
     return new HttpHeaders();
+  }
+
+  private decodeToken(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(window.atob(base64));
+    } catch (error) {
+      console.error('Erro ao decodificar token:', error);
+      return null;
+    }
   }
 
   registrar(
@@ -72,17 +97,22 @@ export class AuthService {
       .post<LoginResponse>(`${this.apiUrl}/login`, { email, password: senha })
       .pipe(
         map((response) => {
-          console.log('Resposta do login:', response); // Verificar a resposta
-          // Não há mais necessidade de acessar `user`, pois a resposta não contém esse campo
+          const tokenPayload = this.decodeToken(response.token);
+          if (!tokenPayload) {
+            throw new Error('Token inválido');
+          }
+
           const usuario: Usuario = {
-            id: Number(response.token), // ID pode ser extraído de algum lugar ou deixado em branco se não necessário
-            nome: '', // Pode ser deixado vazio ou de outra forma, já que não temos o nome do usuário
-            email: email, // Aqui você pode usar o email como identificação
-            nivelAcesso: 'user', // O nível de acesso pode ser atribuído manualmente ou de acordo com o backend
+            id: parseInt(tokenPayload.id),
+            nome: tokenPayload.username,
+            email: tokenPayload.username,
+            nivelAcesso: tokenPayload.role,
           };
+
           localStorage.setItem('token', response.token);
           localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
-          this.usuarioLogadoSubject.next(usuario);
+          this.usuarioLogado.next(usuario);
+          this.router.navigate(['/agenda']);
           return usuario;
         }),
         catchError((error) => {
@@ -98,26 +128,27 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('usuarioLogado');
-    this.usuarioLogadoSubject.next(null);
+    this.usuarioLogado.next(null);
+    this.router.navigate(['/login']);
   }
 
   isLoggedIn(): boolean {
     const token = this.getToken();
-    return !!token && this.usuarioLogadoSubject.value !== null;
+    return !!token && this.usuarioLogado.value !== null;
   }
 
   isAdmin(): boolean {
-    const usuario = this.usuarioLogadoSubject.value;
+    const usuario = this.usuarioLogado.value;
     return usuario ? usuario.nivelAcesso === 'admin' : false;
   }
 
   getUsuarioLogado(): Usuario | null {
-    let usuario = this.usuarioLogadoSubject.value;
+    let usuario = this.usuarioLogado.value;
     if (!usuario) {
       const usuarioSalvo = localStorage.getItem('usuarioLogado');
       if (usuarioSalvo) {
         usuario = JSON.parse(usuarioSalvo);
-        this.usuarioLogadoSubject.next(usuario);
+        this.usuarioLogado.next(usuario);
       }
     }
     return usuario;
