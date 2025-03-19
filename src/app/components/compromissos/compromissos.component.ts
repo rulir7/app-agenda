@@ -254,12 +254,14 @@ export class CompromissosComponent implements OnInit {
 
   onSubmit(): void {
     if (this.compromissoForm.valid) {
+      const compromisso = {
+        ...this.compromissoForm.value,
+        userId: this.authService.getUserId(),
+      };
+
       if (this.editando && this.compromissoEditandoId) {
         this.compromissoService
-          .atualizarCompromisso(
-            this.compromissoEditandoId,
-            this.compromissoForm.value
-          )
+          .atualizarCompromisso(this.compromissoEditandoId, compromisso)
           .subscribe({
             next: () => {
               this.mensagem = 'Compromisso atualizado com sucesso!';
@@ -271,18 +273,16 @@ export class CompromissosComponent implements OnInit {
             },
           });
       } else {
-        this.compromissoService
-          .criarCompromisso(this.compromissoForm.value)
-          .subscribe({
-            next: () => {
-              this.mensagem = 'Compromisso criado com sucesso!';
-              this.carregarCompromissos();
-              this.compromissoForm.reset();
-            },
-            error: (erro) => {
-              this.mensagem = 'Erro ao criar compromisso: ' + erro.message;
-            },
-          });
+        this.compromissoService.criarCompromisso(compromisso).subscribe({
+          next: () => {
+            this.mensagem = 'Compromisso criado com sucesso!';
+            this.carregarCompromissos();
+            this.compromissoForm.reset();
+          },
+          error: (erro) => {
+            this.mensagem = 'Erro ao criar compromisso: ' + erro.message;
+          },
+        });
       }
     }
   }
@@ -321,14 +321,12 @@ export class CompromissosComponent implements OnInit {
   }
 
   podeEditarOuExcluir(compromisso: Compromisso): boolean {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) return false;
+    if (this.authService.isAdmin()) {
+      return true;
+    }
 
-    if (usuario.nivelAcesso === 'admin') return true;
-
-    return compromisso.userId
-      ? compromisso.userId === usuario.id.toString()
-      : false;
+    const userId = this.authService.getUserId();
+    return compromisso.userId ? compromisso.userId === userId : false;
   }
 
   getNomeContato(id: number): string {

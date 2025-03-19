@@ -1,15 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import {
-  BehaviorSubject,
-  Observable,
-  map,
-  tap,
-  catchError,
-  throwError,
-} from 'rxjs';
-import { Usuario } from '../models/usuario.interface';
 import { Router } from '@angular/router';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { jwtDecode } from 'jwt-decode';
 
 interface LoginResponse {
   token: string;
@@ -26,47 +20,12 @@ interface LoginResponse {
 })
 export class AuthService {
   private apiUrl = 'https://api-users-gdsb.onrender.com';
-  private usuarioLogado = new BehaviorSubject<Usuario | null>(null);
-  usuarioLogado$ = this.usuarioLogado.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {
-    const usuarioSalvo = localStorage.getItem('usuarioLogado');
-    const token = localStorage.getItem('token');
-    if (usuarioSalvo && token) {
-      this.usuarioLogado.next(JSON.parse(usuarioSalvo));
-    }
-  }
+  constructor(private http: HttpClient, private router: Router) {}
 
-  //versao professor
-  /*
-constructor() {
-IsAuthenticated(): boolean {
-return !!localStorage.getItem('token');
-}
-}
-
-
-
-
-*/
-
-  private addAuthHeaders() {
+  private addAuthHeaders(): HttpHeaders {
     const token = this.getToken();
-    if (token) {
-      return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    }
-    return new HttpHeaders();
-  }
-
-  private decodeToken(token: string): any {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(window.atob(base64));
-    } catch (error) {
-      console.error('Erro ao decodificar token:', error);
-      return null;
-    }
+    return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }
 
   registrar(
@@ -92,28 +51,17 @@ return !!localStorage.getItem('token');
       );
   }
 
-  login(email: string, senha: string): Observable<Usuario> {
+  login(email: string, senha: string): Observable<any> {
     return this.http
-      .post<LoginResponse>(`${this.apiUrl}/login`, { email, password: senha })
+      .post<LoginResponse>(`${this.apiUrl}/login`, {
+        email,
+        password: senha,
+      })
       .pipe(
         map((response) => {
-          const tokenPayload = this.decodeToken(response.token);
-          if (!tokenPayload) {
-            throw new Error('Token inválido');
-          }
-
-          const usuario: Usuario = {
-            id: parseInt(tokenPayload.id),
-            nome: tokenPayload.username,
-            email: tokenPayload.username,
-            nivelAcesso: tokenPayload.role,
-          };
-
           localStorage.setItem('token', response.token);
-          localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
-          this.usuarioLogado.next(usuario);
           this.router.navigate(['/agenda']);
-          return usuario;
+          return response;
         }),
         catchError((error) => {
           console.error('Erro no login:', error);
@@ -127,47 +75,60 @@ return !!localStorage.getItem('token');
 
   logout(): void {
     localStorage.removeItem('token');
-    localStorage.removeItem('usuarioLogado');
-    this.usuarioLogado.next(null);
     this.router.navigate(['/login']);
   }
 
-  isLoggedIn(): boolean {
+  isAuthenticated(): boolean {
+    return !!this.getToken();
+  }
+
+  getUserRole(): string | null {
     const token = this.getToken();
-    return !!token && this.usuarioLogado.value !== null;
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      return decoded.role;
+    }
+    return null;
+  }
+
+  getUserUsername(): string | null {
+    const token = this.getToken();
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      return decoded.username;
+    }
+    return null;
+  }
+
+  getUserId(): string | null {
+    const token = this.getToken();
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      return decoded.id;
+    }
+    return null;
   }
 
   isAdmin(): boolean {
-    const usuario = this.usuarioLogado.value;
-    return usuario ? usuario.nivelAcesso === 'admin' : false;
-  }
-
-  getUsuarioLogado(): Usuario | null {
-    let usuario = this.usuarioLogado.value;
-    if (!usuario) {
-      const usuarioSalvo = localStorage.getItem('usuarioLogado');
-      if (usuarioSalvo) {
-        usuario = JSON.parse(usuarioSalvo);
-        this.usuarioLogado.next(usuario);
-      }
-    }
-    return usuario;
+    return this.getUserRole() === 'admin';
   }
 
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
-  // Método para obter informações do usuário com autenticação
   getUserInfo(): Observable<any> {
-    const headers = this.addAuthHeaders();
-    return this.http.get(`${this.apiUrl}/user-info`, { headers }).pipe(
-      catchError((error) => {
-        console.error('Erro ao buscar informações do usuário:', error);
-        return throwError(
-          () => new Error('Falha ao buscar as informações do usuário.')
-        );
+    return this.http
+      .get(`${this.apiUrl}/user-info`, {
+        headers: this.addAuthHeaders(),
       })
-    );
+      .pipe(
+        catchError((error) => {
+          console.error('Erro ao buscar informações do usuário:', error);
+          return throwError(
+            () => new Error('Falha ao buscar as informações do usuário.')
+          );
+        })
+      );
   }
 }

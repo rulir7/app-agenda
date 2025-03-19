@@ -1,27 +1,16 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
-import { adminGuard } from './guards/admin.guard';
+import { LoginComponent } from './components/login/login.component';
+import { CompromissosComponent } from './components/compromissos/compromissos.component';
+import { AuthGuard } from './guards/auth.guard';
+import { AdminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
+  { path: '', redirectTo: '/agenda', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
   {
-    path: '',
-    redirectTo: 'compromissos',
-    pathMatch: 'full',
-  },
-  {
-    path: 'login',
-    loadComponent: () =>
-      import('./components/login/login.component').then(
-        (m) => m.LoginComponent
-      ),
-  },
-  {
-    path: 'compromissos',
-    loadComponent: () =>
-      import('./components/compromissos/compromissos.component').then(
-        (m) => m.CompromissosComponent
-      ),
-    canActivate: [authGuard],
+    path: 'agenda',
+    component: CompromissosComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'contatos',
@@ -29,7 +18,7 @@ export const routes: Routes = [
       import('./components/contatos/contatos.component').then(
         (m) => m.ContatosComponent
       ),
-    canActivate: [authGuard],
+    canActivate: [AuthGuard],
   },
   {
     path: 'locais',
@@ -37,10 +26,7 @@ export const routes: Routes = [
       import('./components/locais/locais.component').then(
         (m) => m.LocaisComponent
       ),
-    canActivate: [authGuard, adminGuard],
+    canActivate: [AuthGuard, AdminGuard],
   },
-  {
-    path: '**',
-    redirectTo: 'compromissos',
-  },
+  { path: '**', redirectTo: '/agenda' },
 ];

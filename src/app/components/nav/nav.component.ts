@@ -24,16 +24,7 @@ import { AuthService } from '../../services/auth.service';
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
-            <li class="nav-item" *ngIf="authService.isLoggedIn()">
-              <a
-                class="nav-link"
-                routerLink="/compromissos"
-                routerLinkActive="active"
-              >
-                Compromissos
-              </a>
-            </li>
-            <li class="nav-item" *ngIf="authService.isLoggedIn()">
+            <li class="nav-item" *ngIf="authService.isAuthenticated()">
               <a
                 class="nav-link"
                 routerLink="/contatos"
@@ -53,10 +44,10 @@ import { AuthService } from '../../services/auth.service';
             </li>
           </ul>
           <ul class="navbar-nav">
-            <li class="nav-item" *ngIf="!authService.isLoggedIn()">
+            <li class="nav-item" *ngIf="!authService.isAuthenticated()">
               <a class="nav-link" routerLink="/login">Login</a>
             </li>
-            <li class="nav-item" *ngIf="authService.isLoggedIn()">
+            <li class="nav-item" *ngIf="authService.isAuthenticated()">
               <a class="nav-link" href="#" (click)="logout($event)">Logout</a>
             </li>
           </ul>

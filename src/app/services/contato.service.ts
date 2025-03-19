@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Contato } from '../models/contato.interface';
 import { AuthService } from './auth.service';
@@ -12,92 +12,73 @@ export class ContatoService {
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
+  private getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
+
   getContatos(): Observable<Contato[]> {
-    return this.http.get<Contato[]>(this.apiUrl);
+    return this.http.get<Contato[]>(this.apiUrl, {
+      headers: this.getHeaders(),
+    });
   }
 
   getContato(id: number): Observable<Contato> {
-    return this.http.get<Contato>(`${this.apiUrl}/${id}`);
+    return this.http.get<Contato>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders(),
+    });
   }
 
   criarContato(contato: Omit<Contato, 'id' | 'userId'>): Observable<Contato> {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) throw new Error('Usuário não autenticado');
+    if (!this.authService.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
+    }
 
     const novoContato = {
       ...contato,
-      userId: usuario.id.toString(),
+      userId: this.authService.getUserId(),
     };
 
-    return this.http.post<Contato>(this.apiUrl, novoContato);
+    return this.http.post<Contato>(this.apiUrl, novoContato, {
+      headers: this.getHeaders(),
+    });
   }
 
   atualizarContato(
     id: number,
     contato: Omit<Contato, 'id' | 'userId'>
   ): Observable<Contato> {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) throw new Error('Usuário não autenticado');
+    if (!this.authService.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
+    }
 
-    // Primeiro verifica se o usuário tem permissão para editar
-    return new Observable((observer) => {
-      this.getContato(id).subscribe({
-        next: (contatoExistente) => {
-          if (this.podeEditarOuExcluir(contatoExistente)) {
-            this.http
-              .put<Contato>(`${this.apiUrl}/${id}`, {
-                ...contato,
-                id,
-                userId: contatoExistente.userId,
-              })
-              .subscribe({
-                next: (response) => observer.next(response),
-                error: (error) => observer.error(error),
-              });
-          } else {
-            observer.error(
-              new Error('Você não tem permissão para editar este contato')
-            );
-          }
-        },
-        error: (error) => observer.error(error),
-      });
-    });
+    return this.http.put<Contato>(
+      `${this.apiUrl}/${id}`,
+      {
+        ...contato,
+        id,
+        userId: this.authService.getUserId(),
+      },
+      { headers: this.getHeaders() }
+    );
   }
 
   excluirContato(id: number): Observable<void> {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) throw new Error('Usuário não autenticado');
+    if (!this.authService.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
+    }
 
-    // Primeiro verifica se o usuário tem permissão para excluir
-    return new Observable((observer) => {
-      this.getContato(id).subscribe({
-        next: (contato) => {
-          if (this.podeEditarOuExcluir(contato)) {
-            this.http.delete<void>(`${this.apiUrl}/${id}`).subscribe({
-              next: () => observer.next(),
-              error: (error) => observer.error(error),
-            });
-          } else {
-            observer.error(
-              new Error('Você não tem permissão para excluir este contato')
-            );
-          }
-        },
-        error: (error) => observer.error(error),
-      });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders(),
     });
   }
 
-  // Método auxiliar para verificar se o usuário pode editar ou excluir um contato
   private podeEditarOuExcluir(contato: Contato): boolean {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) return false;
+    if (this.authService.isAdmin()) {
+      return true;
+    }
 
-    // Admins podem editar/excluir qualquer contato
-    if (usuario.nivelAcesso === 'admin') return true;
-
-    // Usuários normais só podem editar/excluir seus próprios contatos
-    return contato.userId === usuario.id.toString();
+    const userId = this.authService.getUserId();
+    return contato.userId ? contato.userId === userId : false;
   }
 }

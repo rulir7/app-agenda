@@ -1,6 +1,6 @@
 // compromisso.service.ts - Serviço para gerenciamento de compromissos
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Compromisso } from '../models/compromisso.interface';
 import { AuthService } from './auth.service';
@@ -13,94 +13,76 @@ export class CompromissoService {
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
+  private getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
+
   getCompromissos(): Observable<Compromisso[]> {
-    return this.http.get<Compromisso[]>(this.apiUrl);
+    return this.http.get<Compromisso[]>(this.apiUrl, {
+      headers: this.getHeaders(),
+    });
   }
 
   getCompromisso(id: number): Observable<Compromisso> {
-    return this.http.get<Compromisso>(`${this.apiUrl}/${id}`);
+    return this.http.get<Compromisso>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders(),
+    });
   }
 
   criarCompromisso(
     compromisso: Omit<Compromisso, 'id' | 'userId'>
   ): Observable<Compromisso> {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) throw new Error('Usuário não autenticado');
+    if (!this.authService.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
+    }
 
     const novoCompromisso = {
       ...compromisso,
-      userId: usuario.id.toString(),
+      userId: this.authService.getUserId(),
     };
 
-    return this.http.post<Compromisso>(this.apiUrl, novoCompromisso);
+    return this.http.post<Compromisso>(this.apiUrl, novoCompromisso, {
+      headers: this.getHeaders(),
+    });
   }
 
   atualizarCompromisso(
     id: number,
     compromisso: Omit<Compromisso, 'id' | 'userId'>
   ): Observable<Compromisso> {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) throw new Error('Usuário não autenticado');
+    if (!this.authService.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
+    }
 
-    // Primeiro verifica se o usuário tem permissão para editar
-    return new Observable((observer) => {
-      this.getCompromisso(id).subscribe({
-        next: (compromissoExistente) => {
-          if (this.podeEditarOuExcluir(compromissoExistente)) {
-            this.http
-              .put<Compromisso>(`${this.apiUrl}/${id}`, {
-                ...compromisso,
-                id,
-                userId: compromissoExistente.userId,
-              })
-              .subscribe({
-                next: (response) => observer.next(response),
-                error: (error) => observer.error(error),
-              });
-          } else {
-            observer.error(
-              new Error('Você não tem permissão para editar este compromisso')
-            );
-          }
-        },
-        error: (error) => observer.error(error),
-      });
-    });
+    return this.http.put<Compromisso>(
+      `${this.apiUrl}/${id}`,
+      {
+        ...compromisso,
+        id,
+        userId: this.authService.getUserId(),
+      },
+      { headers: this.getHeaders() }
+    );
   }
 
   excluirCompromisso(id: number): Observable<void> {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) throw new Error('Usuário não autenticado');
+    if (!this.authService.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
+    }
 
-    // Primeiro verifica se o usuário tem permissão para excluir
-    return new Observable((observer) => {
-      this.getCompromisso(id).subscribe({
-        next: (compromisso) => {
-          if (this.podeEditarOuExcluir(compromisso)) {
-            this.http.delete<void>(`${this.apiUrl}/${id}`).subscribe({
-              next: () => observer.next(),
-              error: (error) => observer.error(error),
-            });
-          } else {
-            observer.error(
-              new Error('Você não tem permissão para excluir este compromisso')
-            );
-          }
-        },
-        error: (error) => observer.error(error),
-      });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders(),
     });
   }
 
   // Método auxiliar para verificar se o usuário pode editar ou excluir um compromisso
   private podeEditarOuExcluir(compromisso: Compromisso): boolean {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) return false;
+    if (this.authService.isAdmin()) {
+      return true;
+    }
 
-    // Admins podem editar/excluir qualquer compromisso
-    if (usuario.nivelAcesso === 'admin') return true;
-
-    // Usuários normais só podem editar/excluir seus próprios compromissos
-    return compromisso.userId === usuario.id.toString();
+    const userId = this.authService.getUserId();
+    return compromisso.userId ? compromisso.userId === userId : false;
   }
 }

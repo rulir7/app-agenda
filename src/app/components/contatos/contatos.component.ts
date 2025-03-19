@@ -151,9 +151,14 @@ export class ContatosComponent implements OnInit {
 
   onSubmit(): void {
     if (this.contatoForm.valid) {
+      const contato = {
+        ...this.contatoForm.value,
+        userId: this.authService.getUserId(),
+      };
+
       if (this.editando && this.contatoEditandoId) {
         this.contatoService
-          .atualizarContato(this.contatoEditandoId, this.contatoForm.value)
+          .atualizarContato(this.contatoEditandoId, contato)
           .subscribe({
             next: () => {
               this.mensagem = 'Contato atualizado com sucesso!';
@@ -165,7 +170,7 @@ export class ContatosComponent implements OnInit {
             },
           });
       } else {
-        this.contatoService.criarContato(this.contatoForm.value).subscribe({
+        this.contatoService.criarContato(contato).subscribe({
           next: () => {
             this.mensagem = 'Contato criado com sucesso!';
             this.carregarContatos();
@@ -210,11 +215,11 @@ export class ContatosComponent implements OnInit {
   }
 
   podeEditarOuExcluir(contato: Contato): boolean {
-    const usuario = this.authService.getUsuarioLogado();
-    if (!usuario) return false;
+    if (this.authService.isAdmin()) {
+      return true;
+    }
 
-    if (usuario.nivelAcesso === 'admin') return true;
-
-    return contato.userId ? contato.userId === usuario.id.toString() : false;
+    const userId = this.authService.getUserId();
+    return contato.userId ? contato.userId === userId : false;
   }
 }

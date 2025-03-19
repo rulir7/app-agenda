@@ -1,0 +1,9 @@
+<nav>
+  <ul>
+    <li><a routerLink="/agenda" routerLinkActive="active">Agenda</a></li>
+    <li><a routerLink="/contatos" routerLinkActive="active">Contatos</a></li>
+    <li *ngIf="isAdmin()"><a routerLink="/locais" routerLinkActive="active">Locais</a></li>
+    <li *ngIf="isAuthenticated()"><a (click)="logout()">Sair</a></li>
+    <li *ngIf="!isAuthenticated()"><a routerLink="/login">Login</a></li>
+  </ul>
+</nav> 
