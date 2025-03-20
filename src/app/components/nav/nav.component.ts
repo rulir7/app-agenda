@@ -43,6 +43,15 @@ import { AuthService } from '../../services/auth.service';
               </a>
             </li>
           </ul>
+          <p
+            *ngIf="authService.isAuthenticated()"
+            class="navbar-item  ms-auto"
+            style="color: white; margin-top: 1.1rem;"
+            href="#"
+          >
+            Olá, {{ authService.getUserRole() }}
+            {{ authService.getUserUsername() }}
+          </p>
           <ul class="navbar-nav">
             <li class="nav-item" *ngIf="!authService.isAuthenticated()">
               <a class="nav-link" routerLink="/login">Login</a>

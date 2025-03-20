@@ -3,11 +3,11 @@
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.7.
 
 components/ - Contém todos os componentes da aplicação:
-login/
-nav/
 compromissos/
 contatos/
 locais/
+login/
+nav/
 
 services/ - Contém todos os serviços:
 auth.service.ts
@@ -16,14 +16,14 @@ contato.service.ts
 local.service.ts
 
 models/ - Contém todas as interfaces:
-usuario.interface.ts
 compromisso.interface.ts
 contato.interface.ts
 local.interface.ts
+usuario.interface.ts
 
 guards/ - Contém os guards de proteção de rotas:
-auth.guard.ts
 admin.guard.ts
+auth.guard.ts
 
 interceptors/ - Contém o interceptor HTTP:
 auth.interceptor.ts
@@ -33,15 +33,24 @@ app.component.ts
 app.config.ts
 app.routes.ts
 
+## Para iniciar o JSON-SERVER (contem os compromissos, contatos e locais)
+
+npx json-server --watch src/dados/db.json
+
 ## Development server
 
 To start a local development server, run:
 
 ```bash
-ng serve
+ng serve    ou  npx ng serve
 ```
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+## Usuarios criados para testar
+
+admin = rulir@teste.com / 2569
+user = rulir@hotmail.com / 2569
 
 ## Code scaffolding
 
