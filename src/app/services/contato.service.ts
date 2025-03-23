@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Contato } from '../models/contato.interface';
 import { AuthService } from './auth.service';
@@ -12,20 +12,15 @@ export class ContatoService {
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  }
-
   getContatos(): Observable<Contato[]> {
     return this.http.get<Contato[]>(this.apiUrl, {
-      headers: this.getHeaders(),
+      headers: this.authService.addAuthHeaders(),
     });
   }
 
   getContato(id: number): Observable<Contato> {
     return this.http.get<Contato>(`${this.apiUrl}/${id}`, {
-      headers: this.getHeaders(),
+      headers: this.authService.addAuthHeaders(),
     });
   }
 
@@ -40,7 +35,7 @@ export class ContatoService {
     };
 
     return this.http.post<Contato>(this.apiUrl, novoContato, {
-      headers: this.getHeaders(),
+      headers: this.authService.addAuthHeaders(),
     });
   }
 
@@ -52,15 +47,14 @@ export class ContatoService {
       throw new Error('Usuário não autenticado');
     }
 
-    return this.http.put<Contato>(
-      `${this.apiUrl}/${id}`,
-      {
-        ...contato,
-        id,
-        userId: this.authService.getUserId(),
-      },
-      { headers: this.getHeaders() }
-    );
+    const contatoAtualizado = {
+      ...contato,
+      userId: this.authService.getUserId(),
+    };
+
+    return this.http.put<Contato>(`${this.apiUrl}/${id}`, contatoAtualizado, {
+      headers: this.authService.addAuthHeaders(),
+    });
   }
 
   excluirContato(id: number): Observable<void> {
@@ -69,7 +63,7 @@ export class ContatoService {
     }
 
     return this.http.delete<void>(`${this.apiUrl}/${id}`, {
-      headers: this.getHeaders(),
+      headers: this.authService.addAuthHeaders(),
     });
   }
 

@@ -23,7 +23,7 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  private addAuthHeaders(): HttpHeaders {
+  addAuthHeaders(): HttpHeaders {
     const token = this.getToken();
     return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }

@@ -49,6 +49,16 @@
       "localId": "4",
       "userId": "67d21eb7247366209a6713bf",
       "id": 8
+    },
+    {
+      "titulo": "Teste4",
+      "descricao": "apagar depois",
+      "data": "2025-05-01",
+      "hora": "18:00",
+      "contatoId": "10",
+      "localId": "3",
+      "userId": "67d2211c247366209a6713d0",
+      "id": 9
     }
   ],
   "contatos": [
@@ -102,6 +112,13 @@
       "telefone": "4799835255",
       "userId": "67d21eb7247366209a6713bf",
       "id": 9
+    },
+    {
+      "nome": "ContatoUser2",
+      "email": "contatouser2@gmail.com",
+      "telefone": "4799526525",
+      "userId": "67d21eb7247366209a6713bf",
+      "id": 10
     }
   ],
   "locais": [

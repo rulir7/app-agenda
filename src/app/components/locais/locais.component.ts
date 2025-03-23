@@ -163,7 +163,7 @@ export class LocaisComponent implements OnInit {
 
   deletarLocal(id: number) {
     if (confirm('Tem certeza que deseja excluir este local?')) {
-      this.localService.deletarLocal(id).subscribe({
+      this.localService.excluirLocal(id).subscribe({
         next: () => this.carregarLocais(),
         error: (error) => console.error('Erro ao deletar local:', error),
       });

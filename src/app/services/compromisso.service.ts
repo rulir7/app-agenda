@@ -1,6 +1,6 @@
 // compromisso.service.ts - Serviço para gerenciamento de compromissos
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Compromisso } from '../models/compromisso.interface';
 import { AuthService } from './auth.service';
@@ -13,20 +13,15 @@ export class CompromissoService {
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  }
-
   getCompromissos(): Observable<Compromisso[]> {
     return this.http.get<Compromisso[]>(this.apiUrl, {
-      headers: this.getHeaders(),
+      headers: this.authService.addAuthHeaders(),
     });
   }
 
   getCompromisso(id: number): Observable<Compromisso> {
     return this.http.get<Compromisso>(`${this.apiUrl}/${id}`, {
-      headers: this.getHeaders(),
+      headers: this.authService.addAuthHeaders(),
     });
   }
 
@@ -43,7 +38,7 @@ export class CompromissoService {
     };
 
     return this.http.post<Compromisso>(this.apiUrl, novoCompromisso, {
-      headers: this.getHeaders(),
+      headers: this.authService.addAuthHeaders(),
     });
   }
 
@@ -55,14 +50,17 @@ export class CompromissoService {
       throw new Error('Usuário não autenticado');
     }
 
+    const compromissoAtualizado = {
+      ...compromisso,
+      userId: this.authService.getUserId(),
+    };
+
     return this.http.put<Compromisso>(
       `${this.apiUrl}/${id}`,
+      compromissoAtualizado,
       {
-        ...compromisso,
-        id,
-        userId: this.authService.getUserId(),
-      },
-      { headers: this.getHeaders() }
+        headers: this.authService.addAuthHeaders(),
+      }
     );
   }
 
@@ -72,12 +70,12 @@ export class CompromissoService {
     }
 
     return this.http.delete<void>(`${this.apiUrl}/${id}`, {
-      headers: this.getHeaders(),
+      headers: this.authService.addAuthHeaders(),
     });
   }
 
   // Método auxiliar para verificar se o usuário pode editar ou excluir um compromisso
-  private podeEditarOuExcluir(compromisso: Compromisso): boolean {
+  podeEditarOuExcluir(compromisso: Compromisso): boolean {
     if (this.authService.isAdmin()) {
       return true;
     }

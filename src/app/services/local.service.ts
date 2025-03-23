@@ -13,31 +13,44 @@ export class LocalService {
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   getLocais(): Observable<Local[]> {
-    return this.http.get<Local[]>(this.apiUrl);
+    return this.http.get<Local[]>(this.apiUrl, {
+      headers: this.authService.addAuthHeaders(),
+    });
   }
 
   getLocal(id: number): Observable<Local> {
-    return this.http.get<Local>(`${this.apiUrl}/${id}`);
+    return this.http.get<Local>(`${this.apiUrl}/${id}`, {
+      headers: this.authService.addAuthHeaders(),
+    });
   }
 
-  criarLocal(local: Local): Observable<Local> {
-    if (!this.authService.isAdmin()) {
-      throw new Error('Apenas administradores podem criar locais');
+  criarLocal(local: Omit<Local, 'id'>): Observable<Local> {
+    if (!this.authService.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
     }
-    return this.http.post<Local>(this.apiUrl, local);
+
+    return this.http.post<Local>(this.apiUrl, local, {
+      headers: this.authService.addAuthHeaders(),
+    });
   }
 
-  atualizarLocal(id: number, local: Local): Observable<Local> {
-    if (!this.authService.isAdmin()) {
-      throw new Error('Apenas administradores podem atualizar locais');
+  atualizarLocal(id: number, local: Omit<Local, 'id'>): Observable<Local> {
+    if (!this.authService.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
     }
-    return this.http.put<Local>(`${this.apiUrl}/${id}`, local);
+
+    return this.http.put<Local>(`${this.apiUrl}/${id}`, local, {
+      headers: this.authService.addAuthHeaders(),
+    });
   }
 
-  deletarLocal(id: number): Observable<void> {
-    if (!this.authService.isAdmin()) {
-      throw new Error('Apenas administradores podem deletar locais');
+  excluirLocal(id: number): Observable<void> {
+    if (!this.authService.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
     }
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+      headers: this.authService.addAuthHeaders(),
+    });
   }
 }
