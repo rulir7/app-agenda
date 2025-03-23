@@ -116,19 +116,4 @@ export class AuthService {
   getToken(): string | null {
     return localStorage.getItem('token');
   }
-
-  getUserInfo(): Observable<any> {
-    return this.http
-      .get(`${this.apiUrl}/user-info`, {
-        headers: this.addAuthHeaders(),
-      })
-      .pipe(
-        catchError((error) => {
-          console.error('Erro ao buscar informações do usuário:', error);
-          return throwError(
-            () => new Error('Falha ao buscar as informações do usuário.')
-          );
-        })
-      );
-  }
 }
