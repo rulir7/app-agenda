@@ -2,6 +2,8 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.7.
 
+# Detalhe dos diretórios / arquivos do projeto
+
 components/ - Contém todos os componentes da aplicação:
 compromissos/
 contatos/
@@ -25,13 +27,14 @@ guards/ - Contém os guards de proteção de rotas:
 admin.guard.ts
 auth.guard.ts
 
-interceptors/ - Contém o interceptor HTTP:
-auth.interceptor.ts
-
 Arquivos principais:
 app.component.ts
 app.config.ts
 app.routes.ts
+
+## PRIMEIRO PASSO INSTALAR AS DEPENDÊNCIAS
+
+npm install ou npx npm install
 
 ## Para iniciar o JSON-SERVER (contem os compromissos, contatos e locais)
 

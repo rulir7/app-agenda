@@ -291,7 +291,7 @@ export class LoginComponent {
       this.authService.login(email, senha).subscribe({
         next: () => {
           const token = localStorage.getItem('token');
-          console.log('Token após login:', token); // Verificar se o token está sendo armazenado corretamente.
+          console.log('Token após login:', token); // Verificar o token.
           if (token) {
             this.router.navigate(['/compromissos']);
           } else {
