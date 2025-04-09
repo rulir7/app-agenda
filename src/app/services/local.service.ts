@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Local } from '../models/local.interface';
 import { AuthService } from './auth.service';
+import { environment } from '../../../environment.prod';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LocalService {
-  private apiUrl = 'http://localhost:3000/locais';
+  private apiUrl = environment.apiUrl + '/locais';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 

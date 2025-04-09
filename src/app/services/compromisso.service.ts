@@ -4,12 +4,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Compromisso } from '../models/compromisso.interface';
 import { AuthService } from './auth.service';
+import { environment } from '../../../environment.prod';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CompromissoService {
-  private apiUrl = 'http://localhost:3000/compromissos';
+  private apiUrl = environment.apiUrl + '/compromissos';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 

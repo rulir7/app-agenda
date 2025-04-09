@@ -1,5 +1,30 @@
 # AppAgenda
 
+## DOCKER
+
+Passos para rodar no Play with Docker
+Zipe seu projeto (incluindo esse Dockerfile) e envie ao Play with Docker.
+
+Extraia o .zip:
+
+criar o diretorio, mkdir app-agenda
+cd app-agenda
+unzip app-agenda.zip
+
+Build da imagem:
+docker build -t app-agenda .
+
+Rode o contêiner:
+docker run -d -p 4200:4200 -p 3000:3000 app-agenda
+
+No PWD, clique para expor a porta 4200 (onde estará o Angular) e a porta 3000 (onde estará o json-server).
+Assim, você acessa:
+
+App Angular: http://SEU_IP:4200
+json-server: http://SEU_IP:3000
+
+## LEMBRAR DE ATUALIZAR O IP do CONTAINER NOS SERVICES de COMPROMISSO, CONTATO e LOCAL.
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.7.
 
 # Detalhe dos diretórios / arquivos do projeto
