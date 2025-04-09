@@ -18,4 +18,4 @@ EXPOSE 4200
 EXPOSE 3000
 
 # Comando para rodar Angular + json-server simultaneamente
-CMD ["sh", "-c", "json-server --watch src/dados/db.json --port 3000 & ng serve --host 0.0.0.0 --port 4200 --disable-host-check"]
+CMD ["sh", "-c", "json-server --watch src/dados/db.json --port 3000 & ng serve --host 0.0.0.0 --port 4200 --disable-host-check --proxy-config proxy.conf.json"]

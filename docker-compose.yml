@@ -1,7 +1,28 @@
+##version: '3'
+##services:
+ ## web:
+  ##  build: .
+    ##ports:
+      ##- "80:80"
+      ##- "3000:3000"
+
+#versao professor
 version: '3'
+
 services:
-  web:
-    build: .
+  frontend:
+    build:
+      context: .
     ports:
-      - "80:80"
+      - "4200:4200"
+    depends_on:
+      - backend
+
+  backend:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: sh -c "npm install -g json-server && json-server --watch db.json --host 0.0.0.0 --port 3000"
+    ports:
       - "3000:3000"

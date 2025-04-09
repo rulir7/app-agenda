@@ -3,6 +3,9 @@
 ## DOCKER
 
 Passos para rodar no Play with Docker
+
+gerar o build producao
+ng build --configuration production
 Zipe seu projeto (incluindo esse Dockerfile) e envie ao Play with Docker.
 
 Extraia o .zip:
@@ -12,6 +15,9 @@ cd app-agenda
 unzip app-agenda.zip
 
 Build da imagem:
+docker-compose up --build
+
+ou
 docker build -t app-agenda .
 
 Rode o contêiner:
